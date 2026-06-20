@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prop Firm Pro Tool</title>
+    <style>
+        /* --- CSS: Trading Terminal Design --- */
+        body {
+            background-color: #0b0e14;
+            color: #d1d4dc;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            margin: 0;
+            padding: 40px 20px;
+            box-sizing: border-box;
+        }
+
+        .dashboard {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            max-width: 800px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .card {
+            background-color: #151924;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            width: 320px;
+            border: 1px solid #2a2e39;
+        }
+
+        h2 {
+            text-align: center;
+            color: #ffffff;
+            margin-top: 0;
+            font-size: 1.3em;
+            border-bottom: 1px solid #2a2e39;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-size: 0.85em;
+            color: #8b92a5;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input {
+            background-color: #0b0e14;
+            border: 1px solid #2a2e39;
+            color: #ffffff;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 1em;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input:focus { border-color: #2962ff; }
+
+        button {
+            width: 100%;
+            background-color: #2962ff;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 6px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: 0.2s;
+        }
+
+        button:hover { background-color: #1e4bd8; }
+
+        .btn-warning { background-color: #ff9800; }
+        .btn-warning:hover { background-color: #e68a00; }
+
+        .results {
+            margin-top: 25px;
+            background-color: #0b0e14;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #2962ff;
+            display: none;
+        }
+
+        .result-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+        }
+
+        .highlight-green {
+            color: #00c853;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .highlight-red {
+            color: #ff3d00;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        
+        .divider {
+            height: 1px;
+            background-color: #2a2e39;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard">
+        
+        <div class="card">
+            <h2>Position Sizer</h2>
+            
+            <div class="input-group">
+                <label>Κεφάλαιο ($)</label>
+                <input type="number" id="balance" placeholder="π.χ. 50000">
+            </div>
+            <div class="input-group">
+                <label>Ρίσκο / Trade (%)</label>
+                <input type="number" id="riskPercent" placeholder="π.χ. 1" step="0.1">
+            </div>
+            <div class="input-group">
+                <label>Stop Loss (Points/Ticks)</label>
+                <input type="number" id="stopLoss" placeholder="π.χ. 20">
+            </div>
+            <div class="input-group">
+                <label>Αξία ανά Point ($)</label>
+                <input type="number" id="pointValue" placeholder="π.χ. 20">
+            </div>
+
+            <button onclick="calculateRisk()">Υπολογισμός Ρίσκου</button>
+
+            <div class="results" id="riskResults" style="border-color: #00c853;">
+                <div class="result-row">
+                    <span>Ρίσκο σε Χρήματα:</span>
+                    <span id="riskAmountOutput">$0.00</span>
+                </div>
+                <div class="divider"></div>
+                <div class="result-row">
+                    <span>Μέγεθος Θέσης (Lots):</span>
+                    <span id="lotSizeOutput" class="highlight-green">0.00</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Consistency Tracker</h2>
+            
+            <div class="input-group">
+                <label>Κανόνας Consistency (%)</label>
+                <input type="number" id="consRule" placeholder="π.χ. 40" value="40">
+            </div>
+            <div class="input-group">
+                <label>Συνολικό Κέρδος ως τώρα ($)</label>
+                <input type="number" id="totalProfit" placeholder="π.χ. 5000">
+            </div>
+            <div class="input-group">
+                <label>Κέρδος Καλύτερης Μέρας ($)</label>
+                <input type="number" id="bestDay" placeholder="π.χ. 2500">
+            </div>
+
+            <button class="btn-warning" onclick="calculateConsistency()">Έλεγχος Consistency</button>
+
+            <div class="results" id="consResults" style="border-color: #ff9800;">
+                <div class="result-row">
+                    <span>Τρέχον Ποσοστό:</span>
+                    <span id="currentPercentOutput">0%</span>
+                </div>
+                <div class="divider"></div>
+                <div id="consStatusOutput" style="text-align: center; margin-bottom: 10px;"></div>
+                <div class="result-row" id="neededProfitRow" style="display: none; flex-direction: column; text-align: center;">
+                    <span style="color: #8b92a5; margin-bottom: 5px;">Χρειάζεσαι ακόμα κέρδος:</span>
+                    <span id="neededProfitOutput" class="highlight-green">$0.00</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Λογική για το Risk Management (Παραμένει ίδια)
+        function calculateRisk() {
+            const balance = parseFloat(document.getElementById('balance').value);
+            const riskPercent = parseFloat(document.getElementById('riskPercent').value);
+            const stopLoss = parseFloat(document.getElementById('stopLoss').value);
+            const pointValue = parseFloat(document.getElementById('pointValue').value);
+
+            if (!balance || !riskPercent || !stopLoss || !pointValue) {
+                alert("Συμπλήρωσε όλα τα πεδία στο Position Sizer!");
+                return;
+            }
+
+            const riskAmount = balance * (riskPercent / 100);
+            const slCostPerLot = stopLoss * pointValue;
+            const positionSize = riskAmount / slCostPerLot;
+
+            document.getElementById('riskAmountOutput').innerText = "$" + riskAmount.toFixed(2);
+            document.getElementById('lotSizeOutput').innerText = positionSize.toFixed(2);
+            document.getElementById('riskResults').style.display = "block";
+        }
+
+        // Λογική για το Consistency Tracker (ΝΕΟ)
+        function calculateConsistency() {
+            const ruleTarget = parseFloat(document.getElementById('consRule').value);
+            const totalProfit = parseFloat(document.getElementById('totalProfit').value);
+            const bestDay = parseFloat(document.getElementById('bestDay').value);
+
+            if (!ruleTarget || !totalProfit || !bestDay || totalProfit <= 0) {
+                alert("Συμπλήρωσε σωστά τα κέρδη σου!");
+                return;
+            }
+
+            // 1. Βρίσκουμε το τρέχον ποσοστό
+            const currentPercent = (bestDay / totalProfit) * 100;
+            const percentOutput = document.getElementById('currentPercentOutput');
+            const statusOutput = document.getElementById('consStatusOutput');
+            const neededRow = document.getElementById('neededProfitRow');
+
+            percentOutput.innerText = currentPercent.toFixed(1) + "%";
+
+            // 2. Ελέγχουμε αν περνάει τον κανόνα
+            if (currentPercent <= ruleTarget) {
+                percentOutput.className = "highlight-green";
+                statusOutput.innerHTML = "<span style='color:#00c853; font-weight:bold;'>✅ PASSED! Είσαι εντός κανονισμών.</span>";
+                neededRow.style.display = "none";
+            } else {
+                percentOutput.className = "highlight-red";
+                statusOutput.innerHTML = "<span style='color:#ff3d00; font-weight:bold;'>❌ FAILED! Η καλύτερη μέρα σου είναι πολύ μεγάλη.</span>";
+                
+                // 3. Μαθηματικά για να βρούμε πόσο κέρδος χρειάζεται ακόμα
+                // Τύπος: Απαιτούμενο Συνολικό Κέρδος = Καλύτερη Μέρα / (Ποσοστό Κανόνα / 100)
+                const requiredTotalProfit = bestDay / (ruleTarget / 100);
+                const remainingProfitNeeded = requiredTotalProfit - totalProfit;
+
+                document.getElementById('neededProfitOutput').innerText = "$" + remainingProfitNeeded.toFixed(2);
+                neededRow.style.display = "flex";
+            }
+
+            document.getElementById('consResults').style.display = "block";
+        }
+    </script>
+
+</body>
+</html>
